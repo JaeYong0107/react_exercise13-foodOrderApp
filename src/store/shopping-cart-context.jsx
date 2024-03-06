@@ -24,10 +24,6 @@ function cartReducer(state, action) {
         } else {
             updatedItems.push({ ...action.item, quantity: 1 });
         }
-        console.log(state)
-        console.log(action)
-        console.log(updatedItems);
-        console.log({ ...state, items: updatedItems })
 
         return { ...state, items: updatedItems }
     }
@@ -74,7 +70,6 @@ export default function ContextProvider({ children }) {
         updateItemCart: handleUpdateItemQuantity,
     };
 
-    console.log(cart.items);
     return (
         <CartContext.Provider value={ctxValue}>
             {children}

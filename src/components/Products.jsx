@@ -1,23 +1,12 @@
 import { useContext, useState, useEffect } from "react"
 import { CartContext } from "../store/shopping-cart-context"
+import { fetchMeals } from "../http";
 
 export default function Products() {
     const { addItemCart } = useContext(CartContext);
     const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState();
     const [productMeals, setProductMeals] = useState([]);
-
-    async function fetchMeals() {
-        const response = await fetch('http://localhost:3000/meals');
-        const resData = await response.json();
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch Meals!');
-        }
-
-        return resData;
-    }
-
 
     useEffect(() => {
         async function fetchData() {
