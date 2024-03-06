@@ -1,31 +1,26 @@
-import { useContext, useState, useEffect } from "react"
+import { useContext } from "react"
+import useHttp from "../hooks/useHttp";
 import { CartContext } from "../store/shopping-cart-context"
-import { fetchMeals } from "../http";
+
+const requestConfig = {};
 
 export default function Products() {
     const { addItemCart } = useContext(CartContext);
-    const [isFetching, setIsFetching] = useState(false);
-    const [error, setError] = useState();
-    const [productMeals, setProductMeals] = useState([]);
+    const {
+        data: productMeals,
+        isLoading,
+        error } = useHttp('http://localhost:3000/meals', requestConfig, []);
 
-    useEffect(() => {
-        async function fetchData() {
-            setIsFetching(true);
-            try {
-                const meals = await fetchMeals();
-                setProductMeals(meals);
-            } catch (error) {
-                setError({ message: error.message } || 'Could not fetch meals, please try again later.');
-            } finally {
-                setIsFetching(false);
-            }
-        }
+    if (isLoading) {
+        return <p className="center"> Fetching meals.... </ p>
+    }
 
-        fetchData();
-    }, []);
-
+    if (error) {
+        return <Error title="Failed to fetch meals" message={error} />
+    }
 
     return (
+
         <ul id="meals">
             {productMeals.map((meal) =>
                 <li className="meal-item" key={meal.id}>
