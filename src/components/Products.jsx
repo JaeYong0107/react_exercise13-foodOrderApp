@@ -1,4 +1,41 @@
-export default function Products({ productMeals, onAdd }) {
+import { useContext, useState, useEffect } from "react"
+import { CartContext } from "../store/shopping-cart-context"
+
+export default function Products() {
+    const { addItemCart } = useContext(CartContext);
+    const [isFetching, setIsFetching] = useState(false);
+    const [error, setError] = useState();
+    const [productMeals, setProductMeals] = useState([]);
+
+    async function fetchMeals() {
+        const response = await fetch('http://localhost:3000/meals');
+        const resData = await response.json();
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch Meals!');
+        }
+
+        return resData;
+    }
+
+
+    useEffect(() => {
+        async function fetchData() {
+            setIsFetching(true);
+            try {
+                const meals = await fetchMeals();
+                setProductMeals(meals);
+            } catch (error) {
+                setError({ message: error.message } || 'Could not fetch meals, please try again later.');
+            } finally {
+                setIsFetching(false);
+            }
+        }
+
+        fetchData();
+    }, []);
+
+
     return (
         <ul id="meals">
             {productMeals.map((meal) =>
@@ -11,7 +48,7 @@ export default function Products({ productMeals, onAdd }) {
                             <p className='meal-item-description'>{meal.description}</p>
                         </div>
                         <p className='meal-item-actions'>
-                            <button className="button" onClick={() => onAdd(meal)}>Add to Cart</button>
+                            <button className="button" onClick={() => addItemCart(meal)}>Add to Cart</button>
                         </p>
                     </article>
                 </li>

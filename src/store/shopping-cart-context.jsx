@@ -2,76 +2,79 @@ import { createContext, useReducer } from 'react';
 
 export const CartContext = createContext({
     items: [],
-    addItemCart: () => { },
-    updateItemQuantity: () => { },
+    addItemCart: (item) => { },
+    updateItemCart: (id) => { },
 });
 
-async function fetchMeals() {
-    const response = await fetch('http://localhost:3000/meals');
-    const resData = await response.json();
-
-    if (!response.ok) {
-        throw new Error('Failed to fetch Meals!');
-    }
-
-    return resData;
-}
-
-async function shoppingCartReducer(state, action) {
+function cartReducer(state, action) {
     if (action.type === 'ADD_ITEM') {
         const updatedItems = [...state.items];
 
-        const existingCartItemIndex = updatedItems.findIndex(
-            (cartItem) => cartItem.id === action.payload
+        const existingCartItemIndex = state.items.findIndex(
+            (item) => item.id === action.item.id
         );
-        const existingCartItem = updatedItems[existingCartItemIndex];
 
-        if (existingCartItem) {
+        if (existingCartItemIndex > -1) {
+            const existingItem = state.items[existingCartItemIndex];
             const updatedItem = {
-                ...existingCartItem,
-                quantity: existingCartItem.quantity + 1
+                ...existingItem,
+                quantity: existingItem.quantity + 1,
             }
             updatedItems[existingCartItemIndex] = updatedItem;
         } else {
-            const product = await fetchMeals().find((product) => product.id === action.payload)
-            updatedItems.push({
-                id: action.payload,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-            })
+            updatedItems.push({ ...action.item, quantity: 1 });
         }
+        console.log(state)
+        console.log(action)
+        console.log(updatedItems);
+        console.log({ ...state, items: updatedItems })
 
-        return {
-            items: updatedItems,
-        }
+        return { ...state, items: updatedItems }
     }
 
+    if (action.type === 'UPDATE_ITEM') {
+        const updatedItems = [...state.items];
+        const updatedItemIndex = updatedItems.findIndex(
+            (item) => item.id === action.payload.id
+        );
+
+        const updatedItem = {
+            ...updatedItems[updatedItemIndex]
+        };
+
+        updatedItem.quantity += action.payload.amount;
+
+        if (updatedItem.quantity <= 0) {
+            updatedItems.splice(updatedItemIndex, 1);
+        } else {
+            updatedItems[updatedItemIndex] = updatedItem;
+        };
+
+        return {
+            ...state, items: updatedItems
+        };
+    }
     return state;
 }
 
 export default function ContextProvider({ children }) {
-    const [shoppingCartState, shoppingCartDispatch] = useReducer(shoppingCartReducer, {
-        items: [],
-    })
+    const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] });
 
-    function handleAddItemToCart(id) {
-        shoppingCartDispatch({
-            type: 'ADD_ITEM',
-            payload: id
-        })
+    function handleAddItemToCart(item) {
+        dispatchCartAction({ type: 'ADD_ITEM', item });
     }
 
-    function handleUpdateItemQuantity() {
-
+    function handleUpdateItemQuantity(id, amount) {
+        dispatchCartAction({ type: 'UPDATE_ITEM', payload: { id, amount } });
     }
 
     const ctxValue = {
-        items: shoppingCartState.items,
+        items: cart.items,
         addItemCart: handleAddItemToCart,
-        updateItemQuantity: handleUpdateItemQuantity,
+        updateItemCart: handleUpdateItemQuantity,
     };
 
+    console.log(cart.items);
     return (
         <CartContext.Provider value={ctxValue}>
             {children}
