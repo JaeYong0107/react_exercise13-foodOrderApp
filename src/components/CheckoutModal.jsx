@@ -1,11 +1,10 @@
-import { useRef, useEffect, useContext, useState } from "react";
+import { useRef, useEffect, useContext } from "react";
 import { CartContext } from "../store/shopping-cart-context";
 import { updateUserItem } from "../http";
 
 export default function CheckoutModal({ open, onClose }) {
-    const cart = useRef();
+    const checkout = useRef();
     const { items } = useContext(CartContext);
-    const [error, setError] = useState();
 
     const totalPrice = items.reduce((total, item) => {
         return total + item.price * item.quantity;
@@ -13,9 +12,9 @@ export default function CheckoutModal({ open, onClose }) {
 
     useEffect(() => {
         if (open) {
-            cart.current.showModal();
+            checkout.current.showModal();
         } else {
-            cart.current.close();
+            checkout.current.close();
         }
     }, [open]);
 
@@ -30,7 +29,7 @@ export default function CheckoutModal({ open, onClose }) {
     }
 
     return (
-        <dialog className="modal" ref={cart}>
+        <dialog className="modal" ref={checkout}>
             <h2>Checkout</h2>
             <p>Total Amount: ${totalPrice}</p>
             <form className="control" onSubmit={handleSubmitOrder}>
@@ -54,6 +53,8 @@ export default function CheckoutModal({ open, onClose }) {
         </dialog>
     )
 }
+
+
 // import { useRef, useEffect, useContext } from "react";
 // import { CartContext } from "../store/shopping-cart-context";
 // import useHttp from "../hooks/useHttp";
